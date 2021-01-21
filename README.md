@@ -9,32 +9,31 @@ My terraform, ansible, and kubeadm scripts for CKS exam (K8S v1.20.0)
 - kubectl (brew install kubectl)
 - GCP Project with a Google cloud managed dns (publilc_zone)
 ```
-  ~ % wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-324.0.0-darwin-x86_64.tar.gz
-  ~ % tar zxvf google-cloud-sdk-324.0.0-darwin-x86_64.tar.gz
-  ~ % cd google-cloud-sdk
-  ~ % ./install.sh
-  ~ % gcloud init
-  ~ % gcloud auth login
-  ~ % gcloud iam service-accounts create <service-account-name> --project <gcp-project-id>
-  ~ % gcloud iam service-accounts keys create ~/.ssh/<service-account-name>.json --iam-account <service-account-name>@dataengineeringdemos.iam.gserviceaccount.
+  wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-324.0.0-darwin-x86_64.tar.gz
+  tar zxvf google-cloud-sdk-324.0.0-darwin-x86_64.tar.gz
+  cd google-cloud-sdk
+  ./install.sh
+  gcloud init
+  gcloud auth login
+  gcloud iam service-accounts create <service-account-name> --project <gcp-project-id>
+  gcloud iam service-accounts keys create ~/.ssh/<service-account-name>.json --iam-account <service-account-name>@dataengineeringdemos.iam.gserviceaccount.
 com
-  ~ % gcloud projects add-iam-policy-binding <gcp-project-id> --member='serviceAccount:<service-account-name>@dataengineeringdemos.iam.gserviceaccount.com' --role=roles/editor
+  gcloud projects add-iam-policy-binding <gcp-project-id> --member='serviceAccount:<service-account-name>@dataengineeringdemos.iam.gserviceaccount.com' --role=roles/editor
   
 ```
 ## Installation:
 1. Clone this repo
 ```
-git %git clone https://github.com/ssung-yugabyte/cks-kubeadm.git
-git %cd cks-kubeadm
-cks-kubeadm % 
+git clone https://github.com/ssung-yugabyte/cks-kubeadm.git
+cd cks-kubeadm 
 ```
 2. Prepare variables.tf
 ```
-cks-kubeadm %mv variables.tf.example variables.tf
+mv variables.tf.example variables.tf
 ```
 3. Review and modify the variables.tf
 ```
-cks-kubeadm % cat variables.tf
+cat > variables.tf <<EOF
 variable "gcp_profile" {
   description = "GCP Configuration"
   type = map
@@ -113,28 +112,27 @@ variable "k8s_service_cidr" {
   type		= string
   default	= "10.96.0.0/12"
 }
-
+EOF
 ```
 4. Init Terraform plugins
 ```
-cks-kubeadm %terraform init
+terraform init
 ```
 5. Reivew Terraform plan
 ```
-cks-kubeadm %terraform plan
+terraform plan
 ```
 6. Apply Terraform plan
 ```
-cks-kubeadm %terraform apply --auto-approve
+terraform apply --auto-approve
 ```
 7. Check the k8s cluster
 ```
-cks-kubeadm %kubectl get nodes
+kubectl get nodes
 ```
 8. Kubectl away...
 ```
-cks-kubeadm %cd kubectl/deployments
-deployments %
+cd kubectl/deployments
 ```
 
 ## Reset:
@@ -142,7 +140,7 @@ deployments %
   K8S will use gce to create legacy gce disks (pvc) /firewall rules/health-check/load-balancer/target-pool. When destory, those will be ignored as they are defined outside of terraform. In order to clean up those google cloud resources, you will need gcloud cmd. 
 
 ```
-cks-kubeamd %terraform destroy --auto-approve
+terraform destroy --auto-approve
 ```
 
 ## ToDo:
