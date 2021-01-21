@@ -34,11 +34,20 @@
     apt_key:
       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
       state: present
+  - name: gvisor dep key
+    apt_key:
+      url: https://gvisor.dev/archive.key
+      state: present
   - name: Setup K8s dep
     apt_repository:
       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
       state: present
       filename: kubernetes.list
+  - name: Setup gvisor dep
+    apt_repository:
+      repo: deb https://storage.googleapis.com/gvisor/releases release main"
+      state: present
+      filename: gvisor.list
   - name: Update and upgrade apt
     apt:
       force_apt_get: 'yes'
@@ -50,12 +59,16 @@
       pkg:
       - libseccomp2
       - apt-transport-https
+      - ca-certificates
+      - gnupg-agent
+      - software-properties-common
       - curl
       - ethtool
       - kubelet={{ k8s_ver }}-00
       - kubeadm={{ k8s_ver }}-00
       - kubectl={{ k8s_ver }}-00
       - containerd
+      - runsc
   - name: hold kubeadm
     dpkg_selections:
       name: "{{ item }}"
