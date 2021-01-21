@@ -8,7 +8,19 @@ My terraform, ansible, and kubeadm scripts for CKS exam (K8S v1.20.0)
 - git (brew install git)
 - kubectl (brew install kubectl)
 - GCP Project with a Google cloud managed dns (publilc_zone)
-
+```
+  ~ % wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-324.0.0-darwin-x86_64.tar.gz
+  ~ % tar zxvf google-cloud-sdk-324.0.0-darwin-x86_64.tar.gz
+  ~ % cd google-cloud-sdk
+  ~ % ./install.sh
+  ~ % gcloud init
+  ~ % gcloud auth login
+  ~ % gcloud iam service-accounts create <service-account-name> --project <gcp-project-id>
+  ~ % gcloud iam service-accounts keys create ~/.ssh/<service-account-name>.json --iam-account <service-account-name>@dataengineeringdemos.iam.gserviceaccount.
+com
+  ~ % gcloud projects add-iam-policy-binding <gcp-project-id> --member='serviceAccount:<service-account-name>@dataengineeringdemos.iam.gserviceaccount.com' --role=roles/editor
+  
+```
 ## Installation:
 1. Clone this repo
 ```
