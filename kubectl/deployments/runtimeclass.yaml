@@ -1,0 +1,5 @@
+apiVersion: node.k8s.io/vibeta1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc

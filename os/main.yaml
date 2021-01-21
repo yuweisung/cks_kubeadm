@@ -1,0 +1,71 @@
+---
+- hosts: all 
+  gather_facts: no
+  become: yes
+  tasks: 
+  - name: Waiting for ssh
+    wait_for_connection:
+      timeout: 900
+  - name: load br_netfilter
+    modprobe:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - br_netfilter
+      - overlay
+  - name: iptables4/6 bridged traffic
+    sysctl:
+      name: "{{ item }}"
+      value: '1'
+      state: present
+    with_items:
+      - net.bridge.bridge-nf-call-ip6tables
+      - net.bridge.bridge-nf-call-iptables
+      - net.bridge.bridge-nf-call-arptables
+      - net.ipv4.ip_forward
+  - name: Swap off
+    shell: "swapoff -a"
+  - name: Disable swap in fstab
+    mount:
+      name: swap
+      fstype: swap
+      state: absent
+  - name: Setup dep key
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+  - name: Setup K8s dep
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+      filename: kubernetes.list
+  - name: Update and upgrade apt
+    apt:
+      force_apt_get: 'yes'
+      update_cache: 'yes'
+      upgrade: 'yes'
+  - name: Install dependencies
+    apt:
+      force_apt_get: yes
+      pkg:
+      - libseccomp2
+      - apt-transport-https
+      - curl
+      - ethtool
+      - kubelet={{ k8s_ver }}-00
+      - kubeadm={{ k8s_ver }}-00
+      - kubectl={{ k8s_ver }}-00
+      - containerd
+  - name: hold kubeadm
+    dpkg_selections:
+      name: "{{ item }}"
+      selection: hold
+    with_items:
+      - kubelet
+      - kubeadm
+      - kubectl  
+  - name: Start containerd service 
+    systemd:
+      name: containerd
+      state: started
+      enabled: yes

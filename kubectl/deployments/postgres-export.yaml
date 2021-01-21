@@ -1,0 +1,61 @@
+apiVersion: extensions/v1
+kind: Deployment
+metadata:
+  name: postgres-exporter
+spec:
+  template:
+    metadata:
+      labels:
+        app: postgres-exporter
+      name: postgres-exporter
+    spec:
+      containers:
+      - name: postgres-exporter
+        image: wrouesnel/postgres_exporter:0.8.0
+        args:
+          - -extend.query-path=/config/queries.yaml
+        ports:
+        - containerPort: 9187
+          hostPort: 9187
+        volumeMounts:
+        - name: config
+          readOnly: true
+          mountPath: /config
+        env:
+          - name: POSTGRES_ADDR
+            valueFrom:
+              secretKeyRef:
+                key: host
+                name: postgres
+          - name: DATA_SOURCE_NAME
+            valueFrom:
+              secretKeyRef:
+                key: DATA_SOURCE_NAME
+                name: postgres
+      volumes:
+      - name: config
+        configMap:
+          name: postgres-exporter-cm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgres-exporter
+  name: postgres-exporter
+spec:
+  selector:
+    app: postgres-exporter
+  type: ClusterIP
+  ports:
+  - name: http-metrics
+    port:9187
+    protocol: TCP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-exporter-cm
+data:
+  queries.yaml: |-
+  

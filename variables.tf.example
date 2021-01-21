@@ -1,0 +1,77 @@
+variable "gcp_profile" {
+  description = "GCP Configuration"
+  type = map
+  default = {
+    project = "default-project"
+    region = "us-central1"
+    zone = "us-central1-c"
+    credentials = "~/.ssh/default-project.json"
+  }
+  sensitive = true
+}
+
+variable "gce_vm" {
+  description = "GCE Instance Configuration"
+  type = map
+  default = {
+    instance_type = "n2-standard-2"
+    os_project = "ubuntu-os-cloud"
+    os_family = "ubuntu-2004-lts"
+    boot_disk_size = 200
+    ssh_user = "default_user"
+    ssh_pub = "~/.ssh/id_rsa.pub"
+  }
+}
+
+variable "master_count" {
+  description = "K8s Master instances"
+  type = number
+  default = 1
+}
+
+variable "worker_count" {
+  description = "K8s worker instances"
+  type          = number
+  default       = 3
+}
+
+variable "k8s_version" {
+  type		= string
+  default	= "1.20.0"
+}
+
+variable "gcp_private_dns_zone" {
+  description = "Google Managed DNS zone - private zone name"
+  type = map
+  default = {
+    zone_name = "my-private"
+    dns_name = "cks.vmware.lab."
+  } 
+}
+
+variable "gcp_public_dns_zone" {
+  description = "Google Managed DNS zone - public (preconfig required)"
+  type = map
+  default = {
+    enabled = false
+    zone_name = "my-public-zone"
+  }
+}
+
+variable "vpc_subnet_cidr" {
+  description  = "VPC custom subnet CIDR"
+  type          = string
+  default       = "10.240.0.0/24"
+}
+
+variable "k8s_pod_cidr" {
+  description = "K8s pod subnet CIDR"
+  type          = string
+  default       = "10.244.0.0/16"
+}
+
+variable "k8s_service_cidr" {
+  description = "K8s service CIDR"
+  type		= string
+  default	= "10.96.0.0/12"
+}

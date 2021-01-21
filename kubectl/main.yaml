@@ -1,0 +1,44 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Fetching admin.conf
+    become: yes
+    fetch:
+      src: /etc/kubernetes/admin.conf
+      dest: ~/.kube/config
+      flat: yes
+    delegate_to: master-1  
+  - name: Ensure the fqdn name of api
+    lineinfile:
+      path: ~/.kube/config
+      regexp: '\s\s\s\sserver: https://{{ k8s_private_ip }}:6443'
+      line: '    server: https://{{ k8s_public_ip }}:6443'
+  - name: Apply storage class
+    shell: "kubectl apply -f deployments/gcp_pd_sc.yaml"
+  # - name: Add cert-manager
+  #   tags: cert-manager
+  #   shell: "kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.0/cert-manager.yaml"
+  - name: Add gcc secret
+    tags: gcrsecret
+    shell: 'kubectl create secret docker-registry regsecret --docker-server=gcr.io --docker-username=_json_key --docker-password="$(cat {{gcp_credential}})"'
+  # - name: Add clouddns secret
+  #   shell: 'kubectl create secret generic clouddns-dns01-solver-svc-acct --from-file=/Users/ysung/.ssh/vmware-ysung-0d757b074bb2.json'
+  # - name: Add TLS
+  #   shell: 'kubectl apply -f deployments/clusterissuer-lets-encrypt-production.yaml'
+  # - name: add service mesh (linkerd)
+  #   shell: 'linkerd install | kubectl apply -f -'
+
+  - name: Add ingress controller
+    shell: 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml'
+  # - name: Add prometheus helm repo
+  #   shell: 'helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update'
+  # - name: Add prometheus-operator
+  #   shell: 'kubectl create namespace prometheus && helm install prometheus prometheus-community/prometheus-operator --namespace prometheus'
+   # - name: K8S dashboard UI
+   #   shell: "kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml"
+  # - name: Run Kube-bench
+   
+# $ export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+# $ export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
+# $ export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+# $ export TCP_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].port}')

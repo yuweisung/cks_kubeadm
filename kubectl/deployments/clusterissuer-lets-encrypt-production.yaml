@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-production
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ysung@vmware.com
+    privateKeySecretRef:
+      name: letsencrypt-production
+    solvers:
+    - dns01:
+        cloudDNS:
+          serviceAccountSecretRef:
+            name: clouddns-dns01-solver-svc-acct
+            key: vmware-ysung-0d757b074bb2.json
+          project: vmware-ysung
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cks-ysung-net-tls
+  namespace: default
+spec:
+  secretName: cks-cert-secret
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.cks.vmware.lab"
+  - "cks.ysung.net"
