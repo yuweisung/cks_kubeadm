@@ -12,17 +12,17 @@ My terraform, ansible, and kubeadm scripts for CKS exam (K8S v1.20.0)
 ## Installation:
 1. Clone this repo
 ```
-git %git clone https://github.com/vmware-ysung/cks-centos.git
-git %cd cks-centos
-cks-centos % 
+git %git clone https://github.com/ssung-yugabyte/cks-kubeadm.git
+git %cd cks-kubeadm
+cks-kubeadm % 
 ```
 2. Prepare variables.tf
 ```
-cks-centos %mv variables.tf.example variables.tf
+cks-kubeadm %mv variables.tf.example variables.tf
 ```
 3. Review and modify the variables.tf
 ```
-cks-centos % cat variables.tf
+cks-kubeadm % cat variables.tf
 variable "gcp_profile" {
   description = "GCP Configuration"
   type = map
@@ -70,7 +70,7 @@ variable "gcp_private_dns_zone" {
   type = map
   default = {
     zone_name = "XXXXX-private"            <== Your Google Cloud Managed Zone (private)
-    dns_name = "cks.vmware.lab."           <== Your Google Cloud Managed Zone DNS Name (private)
+    dns_name = "cks.yugabyte.lab."           <== Your Google Cloud Managed Zone DNS Name (private)
   } 
 }
 
@@ -79,7 +79,7 @@ variable "gcp_public_dns_zone" {
   type = map
   default = {
     enabled = false   <== OPTIOINAL: google domain resource requires 24hrs to be affected. You need to pre config a google domain in advance, then create a public DNS zone.
-    zone_name = "ysung-public-vmware-zone"
+    zone_name = "ysung-public-ats-zone"
   }
 
 }
@@ -105,23 +105,23 @@ variable "k8s_service_cidr" {
 ```
 4. Init Terraform plugins
 ```
-cks-centos %terraform init
+cks-kubeadm %terraform init
 ```
 5. Reivew Terraform plan
 ```
-cks-centos %terraform plan
+cks-kubeadm %terraform plan
 ```
 6. Apply Terraform plan
 ```
-cks-centos %terraform apply --auto-approve
+cks-kubeadm %terraform apply --auto-approve
 ```
 7. Check the k8s cluster
 ```
-cks-centos %kubectl get nodes
+cks-kubeadm %kubectl get nodes
 ```
 8. Kubectl away...
 ```
-cks-centos %cd kubectl/deployments
+cks-kubeadm %cd kubectl/deployments
 deployments %
 ```
 
@@ -130,7 +130,7 @@ deployments %
   K8S will use gce to create legacy gce disks (pvc) /firewall rules/health-check/load-balancer/target-pool. When destory, those will be ignored as they are defined outside of terraform. In order to clean up those google cloud resources, you will need gcloud cmd. 
 
 ```
-cks-centos %terraform destroy --auto-approve
+cks-kubeamd %terraform destroy --auto-approve
 ```
 
 ## ToDo:
