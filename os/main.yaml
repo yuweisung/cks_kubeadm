@@ -32,22 +32,19 @@
       state: absent
   - name: Setup dep key
     apt_key:
-      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      url: "{{ item }} "
       state: present
-  - name: gvisor dep key
-    apt_key:
-      url: https://gvisor.dev/archive.key
-      state: present
+    with_items:
+      - https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      - https://gvisor.dev/archive.key
   - name: Setup K8s dep
     apt_repository:
-      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      repo: "{{ item.repo }}"
       state: present
-      filename: kubernetes.list
-  - name: Setup gvisor dep
-    apt_repository:
-      repo: deb https://storage.googleapis.com/gvisor/releases release main"
-      state: present
-      filename: gvisor.list
+      filename: "{{ item.filename }}"
+    with_items:
+      - { repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main", filename: "kubernetes.list"}
+      - { repo: "deb https://storage.googleapis.com/gvisor/releases release main", filename: "gvisor.list"}
   - name: Update and upgrade apt
     apt:
       force_apt_get: 'yes'
@@ -69,6 +66,7 @@
       - kubectl={{ k8s_ver }}-00
       - containerd
       - runsc
+      - open-iscsi
   - name: hold kubeadm
     dpkg_selections:
       name: "{{ item }}"
@@ -76,9 +74,15 @@
     with_items:
       - kubelet
       - kubeadm
-      - kubectl  
+      - kubectl 
+  - name: rook dir
+    file:
+      path: /var/lib/rook
+      state: directory
   - name: Start containerd service 
     systemd:
       name: containerd
       state: started
       enabled: yes
+
+

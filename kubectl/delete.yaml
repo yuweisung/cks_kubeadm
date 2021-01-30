@@ -1,7 +1,0 @@
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: Remove class
-    shell: "kubectl delete -f deployments/gcp_pd_sc.yaml"
-  - name: Delete ingress controller
-    shell: 'kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml'
