@@ -1,0 +1,37 @@
+- hosts: localhost
+  gather_facts: no
+  tasks: 
+  - name: calico
+    tags: calico
+    shell: kubectl apply -f calico.yaml
+  - name: ceph-crds
+    shell: 'kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/crds.yaml'
+  - name: ceph-common
+    shell: 'kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/common.yaml'
+  - name: ceph-keyring
+    shell: 'kubectl -n rook-ceph create secret generic --type kubernetes.io/rook rook-ceph-crash-collector-keyring'
+  - name: ceph-operator
+    shell: 'kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/operator.yaml'
+  - name: ceph-cluster
+    shell: 'kubectl create -f ceph_cluster.yaml'
+  - name: ceph-pool-hdd
+    shell: 'kubectl create -f ceph_pool_hdd.yaml'
+  - name: ceph-pool-ssd
+    shell: 'kubectl create -f ceph_pool_ssd.yaml'
+  - name: storage-class-ssd
+    shell: 'kubectl create -f storageclass_ssd.yaml'
+  - name: storage-class-hdd
+    shell: 'kubectl create -f storageclass_hdd.yaml'
+  # - name: default storage class
+  # shell: kubectl patch sc standard -p \"{"metadata": {\"annotations\": {\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}\"
+  - name: Add ingress controller
+    shell: 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.43.0/deploy/static/provider/cloud/deploy.yaml'
+  - name: metallb-ns
+    shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/namespace.yaml
+  - name: metallb-op
+    shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/metallb.yaml
+  - name: metallb-secret
+    shell: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+  - name: metallb-ip-pool
+    shell: k create -f metallb-config.yaml
+

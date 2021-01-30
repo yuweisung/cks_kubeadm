@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: iscsipd
+spec:
+  containers:
+  - name: iscsipd
+    image: kubernetes/pause
+    volumeMounts:
+    - mountPath: "/mnt/iscsipd"
+      name: iscsipd-rw
+  volumes:
+  - name: iscsipd-rw
+    iscsi:
+      targetPortal: 10.0.0.2:3260
+      iqn: iqn.2012-07.com.lenovoemc:storage.nas1.ix4-k8s-pv
+      lun: 0
+      fsType: xfs
+      readOnly: true

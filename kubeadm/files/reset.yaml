@@ -1,0 +1,50 @@
+- hosts: all
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: kubeadm reset 
+    shell: 'kubeadm reset -f'
+  - name: remove cni and rook
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+    - /etc/cni/net.d
+    - /var/lib/rook
+  - name: teardown hdd blk
+    shell: "sgdisk --zag-all {{ item }} && dd if=/dev/zero of={{ item }} bs=1M count=100 oflag=direct,dsync"
+    with_items:
+    - /dev/sdb
+  - name: teardown ssd blk
+    shell: "sgdisk --zag-all {{ item }} && blkdiscard {{ item }}"
+    with_items:
+    - /dev/nvme0n1
+  - name: remove disk lock
+    shell: "ls /dev/mapper/ceph-* | xargs -I% -- dmsetup remove %"
+  - name: clean disks
+    shell: "rm -rf /dev/ceph* /dev/mapper/ceph*"
+- hosts: master-1
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: kubeadm init
+    shell: kubeadm init --pod-network-cidr=10.240.0.0/16
+  - name: kube-config
+    tags: fetch
+    fetch:
+      src: /etc/kubernetes/admin.conf
+      dest: /Users/ysung/.kube/config
+      flat: yes
+- hosts: worker
+  gather_facts: no
+  become: yes
+  tags: join
+  tasks:
+  - name: generate join token
+    shell: kubeadm token create --print-join-command
+    register: join_command
+    delegate_to: master-1
+  - set_fact:
+      kubeadm_join: "{{ join_command.stdout }}"
+  - name: kubeadm join
+    shell: "{{ kubeadm_join }}"
