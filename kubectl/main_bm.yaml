@@ -5,29 +5,25 @@
     tags: calico
     shell: kubectl apply -f calico.yaml
   - name: ceph-crds
-    shell: 'kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/crds.yaml'
+    shell: kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/crds.yaml
   - name: ceph-common
-    shell: 'kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/common.yaml'
+    shell: kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/common.yaml
   - name: ceph-keyring
-    shell: 'kubectl -n rook-ceph create secret generic --type kubernetes.io/rook rook-ceph-crash-collector-keyring'
+    shell: kubectl -n rook-ceph create secret generic --type kubernetes.io/rook rook-ceph-crash-collector-keyring
   - name: ceph-operator
-    shell: 'kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/operator.yaml'
+    shell: kubectl create -f https://raw.githubusercontent.com/rook/rook/release-1.5/cluster/examples/kubernetes/ceph/operator.yaml
   - name: ceph-cluster
-    shell: 'kubectl create -f ceph_cluster.yaml'
+    shell: kubectl create -f ceph_cluster.yaml
   - name: ceph-pool-hdd
-    shell: 'kubectl create -f ceph_pool_hdd.yaml'
+    shell: kubectl create -f ceph_pool_hdd.yaml
   - name: ceph-pool-ssd
-    shell: 'kubectl create -f ceph_pool_ssd.yaml'
+    shell: kubectl create -f ceph_pool_ssd.yaml
   - name: storage-class-ssd
-    shell: 'kubectl create -f storageclass_ssd.yaml'
+    shell: kubectl create -f storageclass_ssd.yaml
   - name: storage-class-hdd
-    shell: 'kubectl create -f storageclass_hdd.yaml'
-  - name: default storage class
-    shell: kubectl patch sc standard -p $PATCH
-    environment:
-      PATCH: '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    shell: kubectl create -f storageclass_hdd.yaml
   - name: Add ingress controller
-    shell: 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.43.0/deploy/static/provider/cloud/deploy.yaml'
+    shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.43.0/deploy/static/provider/cloud/deploy.yaml
   - name: metallb-ns
     shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/namespace.yaml
   - name: metallb-op
@@ -36,5 +32,9 @@
     shell: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
   - name: metallb-ip-pool
     shell: k create -f metallb-config.yaml
-  - name: prometheus
-    shell: k create ns monitoring && helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update && helm -n monitoring install -f prometheus_operator_customize.yaml prom prometheus-community/kube-prometheus-stack 
+  - name: prometheus ns
+    shell: k create ns monitoring
+  - name: helm repo
+    shell: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update
+  - name: prometheus install
+    shell: helm -n monitoring install -f prometheus_operator_customize.yaml prom prometheus-community/kube-prometheus-stack 
