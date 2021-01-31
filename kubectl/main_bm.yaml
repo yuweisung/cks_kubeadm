@@ -34,4 +34,5 @@
     shell: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
   - name: metallb-ip-pool
     shell: k create -f metallb-config.yaml
-
+  - name: prometheus
+    shell: k create ns monitoring && helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update && helm -n monitoring install -f prometheus_operator_customize.yaml prom prometheus-community/kube-prometheus-stack 
