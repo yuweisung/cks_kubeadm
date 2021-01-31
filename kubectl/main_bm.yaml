@@ -22,8 +22,10 @@
     shell: 'kubectl create -f storageclass_ssd.yaml'
   - name: storage-class-hdd
     shell: 'kubectl create -f storageclass_hdd.yaml'
-  # - name: default storage class
-  # shell: kubectl patch sc standard -p \"{"metadata": {\"annotations\": {\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}\"
+  - name: default storage class
+    shell: kubectl patch sc standard -p $PATCH
+    environment:
+      PATCH: '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
   - name: Add ingress controller
     shell: 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.43.0/deploy/static/provider/cloud/deploy.yaml'
   - name: metallb-ns
