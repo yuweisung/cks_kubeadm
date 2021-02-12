@@ -1,0 +1,25 @@
+- hosts: master-1
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: kubeadm init
+    shell: kubeadm init --pod-network-cidr=10.240.0.0/16 --cni-socket=/var/run/containerd/containerd.sock
+  - name: kube-config
+    tags: fetch
+    fetch:
+      src: /etc/kubernetes/admin.conf
+      dest: /Users/ysung/.kube/config
+      flat: yes
+- hosts: worker
+  gather_facts: no
+  become: yes
+  tags: join
+  tasks:
+  - name: generate join token
+    shell: kubeadm token create --print-join-command
+    register: join_command
+    delegate_to: master-1
+  - set_fact:
+      kubeadm_join: "{{ join_command.stdout }}"
+  - name: kubeadm join
+    shell: "{{ kubeadm_join }}"

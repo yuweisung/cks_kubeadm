@@ -37,6 +37,7 @@
     with_items:
       - https://packages.cloud.google.com/apt/doc/apt-key.gpg
       - https://gvisor.dev/archive.key
+      - https://aquasecurity.github.io/trivy-repo/deb/public.key
   - name: Setup K8s dep
     apt_repository:
       repo: "{{ item.repo }}"
@@ -45,6 +46,7 @@
     with_items:
       - { repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main", filename: "kubernetes.list"}
       - { repo: "deb https://storage.googleapis.com/gvisor/releases release main", filename: "gvisor.list"}
+      - { repo: "deb https://aquasecurity.github.io/trivy-repo/deb focal main"}
   - name: Update and upgrade apt
     apt:
       force_apt_get: 'yes'
@@ -67,6 +69,7 @@
       - containerd
       - runsc
       - open-iscsi
+      - trivy
   - name: hold kubeadm
     dpkg_selections:
       name: "{{ item }}"
@@ -79,10 +82,44 @@
     file:
       path: /var/lib/rook
       state: directory
+  - name: create containerd default config
+    shell: containerd config default > /etc/containerd/config.toml
+  - name: config containerd config
+    blockinfile:
+      path: /etc/containerd/config.toml
+      insertafter: EOF
+      block: |
+        disabled_plugins = ["restart"]
+        [plugins.linux]
+        shim_debug = true
+        [plugins.cri.containerd.runtimes.runsc]
+        runtime_type = "io.containerd.runsc.v1"
+        [plugins.cri.containerd.runtimes.runsc.options]
+        TypeUrl = "io.containerd.runsc.v1.options"
+        ConfigPath = "/etc/containerd/runsc.toml"
+  - name: config runsc config
+    blockinfile:
+      path: /etc/containerd/runsc.toml
+      backup: yes
+      block: |
+        log_path = "/var/log/runsc/%ID%/shim.log"
+        log_level = "debug"
+        [runsc_config]
+          debug = "true"
+          debug-log = "/var/log/runsc/%ID%/gvisor.%COMMAND%.log"
   - name: Start containerd service 
     systemd:
       name: containerd
       state: started
       enabled: yes
+  - name: harden kernel
+    sysctl:
+      name: "{{ item }}"
+      value: '1'
+      state: present
+    with_items:
+      - kernel.modules_disabled
+      - kernel.randomize_va_space
+      
 
 

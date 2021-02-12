@@ -28,7 +28,7 @@
   become: yes
   tasks:
   - name: kubeadm init
-    shell: kubeadm init --pod-network-cidr=10.240.0.0/16
+    shell: kubeadm init --pod-network-cidr=10.240.0.0/16 --cni-socket=/var/run/containerd/containerd.sock
   - name: kube-config
     tags: fetch
     fetch:

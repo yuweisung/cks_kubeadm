@@ -1,0 +1,50 @@
+expose:
+  type: loadBalancer
+  tls:
+    enabled: true
+    certSource: auto
+    auto:
+      commonName: "harbor.home.lab"
+    secret:
+      secretName: "harbor-secret"
+      notarySecretName: "harbor-secret"
+  ingress:
+    hosts:
+      core: core.harbor.domain
+      notary: notary.harbor.domain
+    controller: default
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: "true"
+      ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  clusterIP:
+    # The name of ClusterIP service
+    name: harbor
+    ports:
+      httpPort: 80
+      httpsPort: 443
+      notaryPort: 4443
+  nodePort:
+    name: harbor
+    ports:
+      http:
+        port: 80
+        nodePort: 30002
+      https:
+        port: 443
+        nodePort: 30003
+      notary:
+        port: 4443
+        nodePort: 30004
+  loadBalancer:
+    name: harbor
+    IP: "10.0.0.40"
+    ports:
+      httpPort: 80
+      httpsPort: 443
+      notaryPort: 4443
+    annotations: {}
+    sourceRanges: []
+
+externalURL: https://harbor.home.lab

@@ -32,9 +32,13 @@
     shell: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
   - name: metallb-ip-pool
     shell: k create -f metallb-config.yaml
+  - name: cert-manager
+    shell: k create ns cert-manager && helm install cert-manager --namespace cert-manager jetstack/cert-manager --version v1.2.0
   - name: prometheus ns
     shell: k create ns monitoring
   - name: helm repo
     shell: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts && helm repo update
   - name: prometheus install
     shell: helm -n monitoring install -f prometheus_operator_customize.yaml prom prometheus-community/kube-prometheus-stack 
+
+# nginx controller --set controller.extraArgs.default-ssl-certificate=cert-manager/ingress-cert-${LETSENCRYPT_ENVIRONMENT}

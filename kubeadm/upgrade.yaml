@@ -1,0 +1,119 @@
+- hosts: master-1
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubeadm packages
+    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+  - name: upgrade kubeadm
+    shell: kubeadm upgrade apply v1.20.2
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: drain master-1
+    shell: kubectl drain m1.home.lab --ignore-daemonsets
+- hosts: master-1
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubelet and kubectl
+    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+  - name: restart kubelet
+    systemd:
+      name: kubelet
+      state: restarted
+      daemon_reload: yes
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: uncordon master-1
+    shell: kubectl uncordon m1.home.lab
+
+- hosts: worker-1
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubeadm packages
+    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+  - name: upgrade kubeadm
+    shell: kubeadm upgrade node
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: drain worker-1
+    shell: kubectl drain w1.home.lab --ignore-daemonsets
+- hosts: worker-1
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubelet and kubectl
+    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+  - name: restart kubelet
+    systemd:
+      name: kubelet
+      state: restarted
+      daemon_reload: yes
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: uncordon worker-1
+    shell: kubectl uncordon w1.home.lab
+
+- hosts: worker-2
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubeadm packages
+    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+  - name: upgrade kubeadm
+    shell: kubeadm upgrade node
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: drain worker-2
+    shell: kubectl drain w2.home.lab --ignore-daemonsets
+- hosts: worker-2
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubelet and kubectl
+    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+  - name: restart kubelet
+    systemd:
+      name: kubelet
+      state: restarted
+      daemon_reload: yes
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: uncordon worker-2
+    shell: kubectl uncordon w2.home.lab
+
+- hosts: worker-3
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubeadm packages
+    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+  - name: upgrade kubeadm
+    shell: kubeadm upgrade node
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: drain worker-3
+    shell: kubectl drain w3.home.lab --ignore-daemonsets
+- hosts: worker-3
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: install new kubelet and kubectl
+    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+  - name: restart kubelet
+    systemd:
+      name: kubelet
+      state: restarted
+      daemon_reload: yes
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: uncordon worker-3
+    shell: kubectl uncordon w3.home.lab
