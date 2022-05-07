@@ -1,0 +1,19 @@
+- hosts: all
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: update apt repo and cache
+    apt: update_cache=yes cache_valid_time=3600
+  - name: upgrade all apt packages
+    apt: upgrade=dist
+  - name: check reboot
+    register: reboot_required_file
+    stat: path=/var/run/reboot-required get_md5=no
+  - name: reboot if necessary
+    reboot:
+      msg: "Reboot inited by ansible due to kernel updates"
+      connect_timeout: 5
+      reboot_timeout: 300
+      pre_reboot_delay: 0
+      test_command: uptime
+    when: reboot_required_file.stat.exists
