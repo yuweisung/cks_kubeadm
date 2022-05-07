@@ -1,119 +1,63 @@
-- hosts: master-1
+- hosts: all
   gather_facts: no
   become: yes
+  tasks:
+  - name: update apt repo and cache
+    apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+  - name: upgrade all apt packages
+    apt: upgrade=dist force_apt-get=yes
+  - name: check reboot
+    register: reboot_required_file
+    stat: path=/var/run/reboot-required get_md5=no
+  - name: reboot if necessary
+    reboot:
+      msg: "Reboot inited by ansible due to kernel updates"
+      connect_timeout: 5
+      reboot_timeout: 300
+      pre_reboot_delay: 0
+      test_command: uptime
+    when: reboot_required_file.stat.exists
+- hosts: master
+  gather_facts: no
+  become: yes
+  serial: 1
   tasks:
   - name: install new kubeadm packages
-    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+    shell: apt-get install -y --allow-change-held-packages kubeadm="{{ kube_version }}-00"
   - name: upgrade kubeadm
-    shell: kubeadm upgrade apply v1.20.2
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: drain master-1
-    shell: kubectl drain m1.home.lab --ignore-daemonsets
-- hosts: master-1
-  gather_facts: no
-  become: yes
-  tasks:
+    shell: kubeadm upgrade apply v{{ kube_version }} -y
+  - name: localactiontest
+    become: false
+    local_action: ansible.builtin.command kubectl drain {{ inventory_hostname }} --ignore-daemonsets
   - name: install new kubelet and kubectl
-    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+    shell: apt-get install -y --allow-change-held-packages kubelet="{{ kube_version }}-00" kubectl="{{ kube_version }}-00"
   - name: restart kubelet
     systemd:
       name: kubelet
       state: restarted
       daemon_reload: yes
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: uncordon master-1
-    shell: kubectl uncordon m1.home.lab
-
-- hosts: worker-1
+  - name: localactiontest
+    become: false
+    local_action: ansible.builtin.command kubectl uncordon {{ inventory_hostname }}
+- hosts: worker
   gather_facts: no
   become: yes
+  serial: 1
   tasks:
   - name: install new kubeadm packages
-    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
-  - name: upgrade kubeadm
-    shell: kubeadm upgrade node
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: drain worker-1
-    shell: kubectl drain w1.home.lab --ignore-daemonsets
-- hosts: worker-1
-  gather_facts: no
-  become: yes
-  tasks:
-  - name: install new kubelet and kubectl
-    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
-  - name: restart kubelet
-    systemd:
-      name: kubelet
-      state: restarted
-      daemon_reload: yes
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: uncordon worker-1
-    shell: kubectl uncordon w1.home.lab
-
-- hosts: worker-2
-  gather_facts: no
-  become: yes
-  tasks:
-  - name: install new kubeadm packages
-    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
+    shell: apt-get install -y --allow-change-held-packages kubeadm="{{ kube_version }}-00"
   - name: upgrade kubeadm
     shell: kubeadm upgrade node
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: drain worker-2
-    shell: kubectl drain w2.home.lab --ignore-daemonsets
-- hosts: worker-2
-  gather_facts: no
-  become: yes
-  tasks:
+  - name: localactiontest
+    become: false
+    local_action: ansible.builtin.command kubectl drain {{ inventory_hostname }} --ignore-daemonsets --delete-emptydir-data --disable-eviction
   - name: install new kubelet and kubectl
-    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
+    shell: apt-get install -y --allow-change-held-packages kubelet="{{ kube_version }}-00" kubectl="{{ kube_version }}-00"
   - name: restart kubelet
     systemd:
       name: kubelet
       state: restarted
       daemon_reload: yes
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: uncordon worker-2
-    shell: kubectl uncordon w2.home.lab
-
-- hosts: worker-3
-  gather_facts: no
-  become: yes
-  tasks:
-  - name: install new kubeadm packages
-    shell: apt-get install -y --allow-change-held-packages kubeadm=1.20.2-00
-  - name: upgrade kubeadm
-    shell: kubeadm upgrade node
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: drain worker-3
-    shell: kubectl drain w3.home.lab --ignore-daemonsets
-- hosts: worker-3
-  gather_facts: no
-  become: yes
-  tasks:
-  - name: install new kubelet and kubectl
-    shell: apt-get install -y --allow-change-held-packages kubelet=1.20.2-00 kubectl=1.20.2-00
-  - name: restart kubelet
-    systemd:
-      name: kubelet
-      state: restarted
-      daemon_reload: yes
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: uncordon worker-3
-    shell: kubectl uncordon w3.home.lab
+  - name: localactiontest
+    become: false
+    local_action: ansible.builtin.command kubectl uncordon {{ inventory_hostname }}
